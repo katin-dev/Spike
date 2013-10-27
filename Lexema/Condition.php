@@ -12,20 +12,20 @@ class Lexema_Condition extends Lexema_Tag {
 				$valueName = $m[3];
 				
 				if(preg_match('/["\'](\w+)["\']/', $valueName)) {
-					/* 'строка' или "строка" */
+					/* 'СЃС‚СЂРѕРєР°' РёР»Рё "СЃС‚СЂРѕРєР°" */
 					$value = $valueName;
 				} else {					
 					if(is_numeric($valueName)) {
-						/* 5 или 10 или 7.5 */
+						/* 5 РёР»Рё 10 РёР»Рё 7.5 */
 						$value = $valueName;
 					} elseif(isset($data[$valueName])) {
-						/* age=25 или name="Сергей"  - если число, то кавычки не нужны, если строка, то нужны */
+						/* age=25 РёР»Рё name="РЎРµСЂРіРµР№"  - РµСЃР»Рё С‡РёСЃР»Рѕ, С‚Рѕ РєР°РІС‹С‡РєРё РЅРµ РЅСѓР¶РЅС‹, РµСЃР»Рё СЃС‚СЂРѕРєР°, С‚Рѕ РЅСѓР¶РЅС‹ */
 						if(is_numeric($data[$valueName])) {
 							$value = $data[$valueName];
 						} elseif (is_string($data[$valueName])) {
 							$value = '"'.$data[$valueName].'"';
 						} else {
-							/* ещё бывают объекты, массивы... но мы их не обрабатываем */
+							/* РµС‰С‘ Р±С‹РІР°СЋС‚ РѕР±СЉРµРєС‚С‹, РјР°СЃСЃРёРІС‹... РЅРѕ РјС‹ РёС… РЅРµ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј */
 							$value = '"'.gettype($data[$valueName]).'"';
 						}
 					} else {
@@ -44,7 +44,7 @@ class Lexema_Condition extends Lexema_Tag {
 			
 			$html = "";
 			
-			/* разберем все лексемы на те, которые должны выполниться в случае успеха и в случае неудачи */
+			/* СЂР°Р·Р±РµСЂРµРј РІСЃРµ Р»РµРєСЃРµРјС‹ РЅР° С‚Рµ, РєРѕС‚РѕСЂС‹Рµ РґРѕР»Р¶РЅС‹ РІС‹РїРѕР»РЅРёС‚СЊСЃСЏ РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р° Рё РІ СЃР»СѓС‡Р°Рµ РЅРµСѓРґР°С‡Рё */
 			$conditionTags = array(
 				'true' => array(), 
 				'false' => array()
@@ -59,7 +59,7 @@ class Lexema_Condition extends Lexema_Tag {
 				$conditionTags[$tagsName][] = $tag;
 			}
 			
-			/* выбираем лексемы согласно выполненному условию оператора if */
+			/* РІС‹Р±РёСЂР°РµРј Р»РµРєСЃРµРјС‹ СЃРѕРіР»Р°СЃРЅРѕ РІС‹РїРѕР»РЅРµРЅРЅРѕРјСѓ СѓСЃР»РѕРІРёСЋ РѕРїРµСЂР°С‚РѕСЂР° if */
 			if($conditionResult) {
 				$tags = $conditionTags['true'];
 			} else {

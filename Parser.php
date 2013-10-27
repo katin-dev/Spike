@@ -22,12 +22,12 @@ class Parser {
 			$lexema = $this->nextLexemma();
 			
 			if($lexema instanceof Lexema_Tag && $lexema->isCloseTag()) {
-				/* èùåì îòêðûâàþùèé òåã */
+				/* Ð¸Ñ‰ÐµÐ¼ Ð¾Ñ‚ÐºÑ€Ñ‹Ð²Ð°ÑŽÑ‰Ð¸Ð¹ Ñ‚ÐµÐ³ */
 				
 				$innerTags = array();
 				while(($l = array_pop($this->stack)) != null) {
 					if($l instanceof Lexema_Tag && $l->getName() == $lexema->getOpenTagName()) {
-						/* íàøëè îòêðûâàþùèé òåã */
+						/* Ð½Ð°ÑˆÐ»Ð¸ Ð¾Ñ‚ÐºÑ€Ñ‹Ð²Ð°ÑŽÑ‰Ð¸Ð¹ Ñ‚ÐµÐ³ */
 						$l->setTags(array_reverse($innerTags));
 						array_push($this->stack, $l);
 						break;
@@ -54,14 +54,14 @@ class Parser {
 	protected function nextLexemma() {
 		
 		$lex = null;
-		/* íà÷àëî ëåêñåìû */
+		/* Ð½Ð°Ñ‡Ð°Ð»Ð¾ Ð»ÐµÐºÑÐµÐ¼Ñ‹ */
 		if(substr($this->content, $this->position, 2) == "{{") {
 			$pos = strpos($this->content, "}}", $this->position);
 			$length = $pos - $this->position + 2;
 			$lex = new Lexema_Tag(substr($this->content, $this->position, $length));
 			$this->position = $pos + 2;
 		} else {
-			/* ïðîèçâîëüíûé HTML */
+			/* Ð¿Ñ€Ð¾Ð¸Ð·Ð²Ð¾Ð»ÑŒÐ½Ñ‹Ð¹ HTML */
 			$pos = strpos($this->content, "{{", $this->position);
 			
 			if($pos !== false) {

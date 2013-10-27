@@ -4,7 +4,7 @@ class Lexema_Loop extends Lexema_Tag {
 		
 		$html = "";
 		if(isset($data[$this->getName()])) {
-			/* массив,  которым работаем */
+			/* РјР°СЃСЃРёРІ,  РєРѕС‚РѕСЂС‹Рј СЂР°Р±РѕС‚Р°РµРј */
 			$array = $data[$this->getName()];
 			if(is_array($array)) {
 				$arrayLength = count($array);
@@ -13,14 +13,14 @@ class Lexema_Loop extends Lexema_Tag {
 					
 					$itemData = array();
 					
-					/* хотим иметь доступ к переменным уровня выше */
+					/* С…РѕС‚РёРј РёРјРµС‚СЊ РґРѕСЃС‚СѓРї Рє РїРµСЂРµРјРµРЅРЅС‹Рј СѓСЂРѕРІРЅСЏ РІС‹С€Рµ */
 					foreach ($data as $key => $value) {
 						if($key != $this->getName()) {
 							$itemData[$key] = $value;
 						}
 					}
 					
-					/* нам нужны вспомогательные переменные */
+					/* РЅР°Рј РЅСѓР¶РЅС‹ РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ */
 					$itemData['_is_first_'] = (string) ($position == 0);
 					$itemData['_is_last_'] = (string) ($position == $arrayLength - 1);
 					$itemData['_pos_'] = $position;

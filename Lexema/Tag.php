@@ -49,20 +49,20 @@ class Lexema_Tag extends Lexema {
 	
 	public function parse($data) {
 		if($this->getName() == 'if') {
-			/* óñëîâíàÿ ëåêñåìà */
+			/* ÑƒÑĞ»Ğ¾Ğ²Ğ½Ğ°Ñ Ğ»ĞµĞºÑĞµĞ¼Ğ° */
 			$iAm = new Lexema_Condition($this->getContent());
 			$iAm->setTags($this->getTags());
 		} elseif (isset($data[$this->getName()])) {
 			if(is_array($data[$this->getName()])) {
-				/* ëåêñåìà - öèêë */
+				/* Ğ»ĞµĞºÑĞµĞ¼Ğ° - Ñ†Ğ¸ĞºĞ» */
 				$iAm = new Lexema_Loop($this->getContent());
 				$iAm->setTags($this->getTags());
 			} else {
-				/* ëåêñåìà - ïåğåìåííàÿ */
+				/* Ğ»ĞµĞºÑĞµĞ¼Ğ° - Ğ¿ĞµÑ€ĞµĞ¼ĞµĞ½Ğ½Ğ°Ñ */
 				return $data[$this->getName()];
 			}
 		} else {
-			/* ëåêñåìà - callback */
+			/* Ğ»ĞµĞºÑĞµĞ¼Ğ° - callback */
 			$iAm = new Lexema_Callback($this->getContent());
 			$iAm->setTags($this->getTags());
 		}
