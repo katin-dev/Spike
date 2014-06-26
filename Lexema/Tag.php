@@ -3,7 +3,7 @@ class Lexema_Tag extends Lexema {
 	
 	private $tags;
 	private $name;
-	private $paramsString;	
+	private $paramsString;
 	
 	public function __construct($content) {
 		parent::__construct($content);
@@ -20,6 +20,9 @@ class Lexema_Tag extends Lexema {
 	}
 	public function getParamsString() {
 		return $this->paramsString;
+	}
+	public function setParamsString($string) {
+		$this->paramsString = $string;
 	}
 	
 	public function setTags($tags) {
@@ -58,8 +61,8 @@ class Lexema_Tag extends Lexema {
 				$iAm = new Lexema_Loop($this->getContent());
 				$iAm->setTags($this->getTags());
 			} else {
-				/* лексема - переменная */
-				return $value;
+				$iAm = new Lexema_Variable($value);
+				$iAm->setParamsString($this->getParamsString());
 			}
 		} else {
 			/* лексема - callback */
@@ -67,7 +70,17 @@ class Lexema_Tag extends Lexema {
 			$iAm->setTags($this->getTags());
 		}
 		
-		return $iAm->parse($data);
+		$value = $iAm->parse($data);
+		
+		// Модификаторы
+		if(Lexema::$callback && substr($iAm->getParamsString(), 0, 1) == '|') {
+			$modificators = explode("|", substr($iAm->getParamsString(), 1));
+			foreach ($modificators as $modificatorName) {
+				$value = call_user_func_array(Lexema::$callback, array($modificatorName, array("value" => $value), null));
+			}
+		}
+		
+		return $value;
 	}
 	
 	/**
@@ -90,6 +103,12 @@ class Lexema_Tag extends Lexema {
 			return $data;
 		} else {
 			return isset($data[$name]) ? $data[$name] : null;
+		}
+	}
+	
+	private function modifyValue($modificatorName, $value) {
+		if($this->getParser()->getMofidicator($modificatorName)) {
+			return $this->getParser()->getMofidicator($modificatorName)->handle($value);
 		}
 	}
 }

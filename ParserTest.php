@@ -285,12 +285,12 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function testCallbackSimple() {
 		$template = "{{module.news}}<div>{{text}}</div>{{/module.news}}";
-		$this->Parser->setCallback(function ($options, $content) {
-			return "i_am_hero";
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			return $name;
 		});
 		$content = $this->Parser->parse($template, array());
 		
-		$this->assertEquals("i_am_hero", $content);
+		$this->assertEquals("module.news", $content);
 	}
 
 	/**
@@ -299,7 +299,7 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function testCallbackWithParams() {
 		$template = "{{module.news order=\"date DESC\" ids=\"1,2,3,4,5\" }}<b>{{order}}</b><b>{{ids}}</b>{{/module.news}}";
-		$this->Parser->setCallback(function ($options, $content) {
+		$this->Parser->setCallback(function ($name, $options, $content) {
 			return str_replace(array("{{order}}", "{{ids}}"), array($options['order'], $options['ids']), $content);
 		});
 		
@@ -307,10 +307,15 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 			
 		$this->assertEquals("<b>date DESC</b><b>1,2,3,4,5</b>", $content);
 	}
-	
+	/**
+	 * Безопасная передача переменных через параметры вызова callback.
+	 * Под безопасностью понимается не вставка значения переменной в текст, а передача значения переменной напрямую в параметры callback
+	 * Пример: {{ module.news ids="{ids}" }}
+	 * @return number
+	 */
 	public function testCallbackWithVarInParams() {
 		$template = '{{module.news ids="{ids}" }}{{/module.news}}';
-		$this->Parser->setCallback(function ($options, $content) {
+		$this->Parser->setCallback(function ($name, $options, $content) {
 			return count($options['ids']);
 		});
 		
@@ -319,6 +324,18 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		//Передаём в качестве параметра callback'у массив (объект или ещё что-то не примитивное)
 		$content = $this->Parser->parse($template, array("ids" => $ids));
 		$this->assertEquals(10000, $content);
+	}
+	
+	/**
+	 * Модификаторы для переменных. Прим: {{ description|escape }} 
+	 */
+	public function testModificator() {
+		$template = '{{name|escape}}';
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			return $name.':'.$options['value'].':'.empty($content);
+		});
+		$content = $this->Parser->parse($template, array("name" => "Sergey"));
+		$this->assertEquals('escape:Sergey:1', $content);
 	}
 }
 

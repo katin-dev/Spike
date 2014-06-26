@@ -3,6 +3,7 @@
 require_once "Lexema.php";
 require_once "Lexema/Tag.php";
 require_once "Lexema/Text.php";
+require_once "Lexema/Variable.php";
 require_once "Lexema/Callback.php";
 require_once "Lexema/Condition.php";
 require_once "Lexema/Loop.php";
@@ -84,10 +85,10 @@ class Parser {
 	}
 	
 	public function setCallback($callback) {
-		Lexema_Callback::$callback = $callback;
+		Lexema::$callback = $callback;
 	}
 	public function getCallback() {
-		return Lexema_Callback::$callback;
+		return Lexema::$callback;
 	}
 	
 }

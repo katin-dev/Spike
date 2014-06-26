@@ -1,6 +1,7 @@
 <?php
 abstract class Lexema {
 
+	public static $callback;	//Наверное, не лучшее решение
 	private $content;
 	
 	public function __construct($content) {

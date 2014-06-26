@@ -1,11 +1,9 @@
 <?php
 class Lexema_Callback extends Lexema_Tag {
 	
-	public static $callback;
-	
 	public function parse($data) {
-		if(isset(self::$callback)) {
-			return call_user_func_array(self::$callback, array($this->getParams($data), $this->getTemplate()));
+		if(isset(Lexema::$callback)) {
+			return call_user_func_array(Lexema::$callback, array($this->getName(), $this->getParams($data), $this->getTemplate()));
 		}
 	}
 	
