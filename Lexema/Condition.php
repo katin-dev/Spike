@@ -2,28 +2,28 @@
 class Lexema_Condition extends Lexema_Tag {
 
 	public function parse($data) {
-		if(preg_match('/(\w+)\s*([=><])?\s*(["\'\w]+)?/', $this->getParamsString(), $m)) {
+		if(preg_match('/([\.\w]+)\s*([=><])?\s*(["\'\w\.]+)?/', $this->getParamsString(), $m)) {
 			$varname = $m[1];
-			$varvalue = isset($data[$varname]) ? $data[$varname] : "";
+			$varvalue = $this->getVariableValue($varname, $data);
 			$varvalue = empty($varvalue) ? '0' : $varvalue;
 			
 			if(isset($m[2])) {
 				$sign = $m[2];
 				$valueName = $m[3];
 				
-				if(preg_match('/["\'](\w+)["\']/', $valueName)) {
+				if(preg_match('/["\']([\.\w]+)["\']/', $valueName)) {
 					/* 'строка' или "строка" */
 					$value = $valueName;
 				} else {					
 					if(is_numeric($valueName)) {
 						/* 5 или 10 или 7.5 */
 						$value = $valueName;
-					} elseif(isset($data[$valueName])) {
+					} elseif(($value = $this->getVariableValue($valueName, $data)) !== null) {
 						/* age=25 или name="Сергей"  - если число, то кавычки не нужны, если строка, то нужны */
-						if(is_numeric($data[$valueName])) {
-							$value = $data[$valueName];
+						if(is_numeric($value)) {
+							//$value = $data[$valueName];
 						} elseif (is_string($data[$valueName])) {
-							$value = '"'.$data[$valueName].'"';
+							$value = '"'.$value.'"';
 						} else {
 							/* ещё бывают объекты, массивы... но мы их не обрабатываем */
 							$value = '"'.gettype($data[$valueName]).'"';
@@ -34,7 +34,7 @@ class Lexema_Condition extends Lexema_Tag {
 				}
 				$condition = "$varvalue $sign $value";
 			} else {
-				$condition = isset($data[$varname]) ? !empty($data[$varname]) : "false";
+				$condition = $varvalue ? "true" : "false";
 				$condition = $condition ? $condition : "false";
 			}
 			
@@ -73,7 +73,6 @@ class Lexema_Condition extends Lexema_Tag {
 			return $html;
 		}
 	}
-	
 }
 
 ?>

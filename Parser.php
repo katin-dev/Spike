@@ -13,8 +13,10 @@ class Parser {
 	private $content = "";
 	private $data;
 	private $stack = array();
+	private $callback;
 	
 	public function parse($content, $data) {
+		
 		$this->content = $content;
 		$this->data = $data;
 		
@@ -45,8 +47,6 @@ class Parser {
 		foreach ($this->stack as $lexema) {
 			$html .=  $lexema->parse($data);
 		}
-		
-		echo count($this->stack);
 		
 		return $html;
 	}
@@ -83,6 +83,12 @@ class Parser {
 		return $this->position == strlen($this->content);
 	}
 	
+	public function setCallback($callback) {
+		Lexema_Callback::$callback = $callback;
+	}
+	public function getCallback() {
+		return Lexema_Callback::$callback;
+	}
 	
 }
 

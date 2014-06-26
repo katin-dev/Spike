@@ -85,6 +85,15 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		
 		$this->assertEquals("Hello, Vasya!", $result);
 	}
+	/**
+	 * Проверяем запись вида {{user.name}}
+	 */
+	public function testInsertArrayItem() {
+		$content = "Hello, {{user.name}}!";
+		$result = $this->Parser->parse($content, array("user" => array("name" => "Vasya")));
+		
+		$this->assertEquals("Hello, Vasya!", $result);
+	}
 	
 	/**
 	 * Условная конструкция if else
@@ -96,6 +105,90 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 
 		$result = $this->Parser->parse($content, array("win" => false));
 		$this->assertEquals("You are lose!", $result);
+	}
+	/**
+	 * Проверка всех false условий
+	 *  
+	 */
+	public function testFalseIf() {
+		$content = "I like {{if flag}}PHP{{else}}C++{{/if}}";
+		
+		$result = $this->Parser->parse($content, array("flag" => false));
+		$this->assertEquals("I like C++", $result);
+		
+		$result = $this->Parser->parse($content, array("flag" => null));
+		$this->assertEquals("I like C++", $result);
+		
+		$result = $this->Parser->parse($content, array("flag" => array()));
+		$this->assertEquals("I like C++", $result);
+		
+		$result = $this->Parser->parse($content, array("flag" => ""));
+		$this->assertEquals("I like C++", $result);
+	}
+	/**
+	 * Проверка всех true условий
+	 */
+	public function testTrueIf() {
+		$content = "I like {{if flag}}PHP{{else}}C++{{/if}}";
+		
+		$result = $this->Parser->parse($content, array("flag" => true));
+		$this->assertEquals("I like PHP", $result);
+		
+		$result = $this->Parser->parse($content, array("flag" => 1));
+		$this->assertEquals("I like PHP", $result);
+		
+		$result = $this->Parser->parse($content, array("flag" => array("1")));
+		$this->assertEquals("I like PHP", $result);
+		
+		$result = $this->Parser->parse($content, array("flag" => "1"));
+		$this->assertEquals("I like PHP", $result);
+	}
+	
+	/**
+	 * Проверка значения элемента массива: {{ if user.is_active}}
+	 */
+	public function testIfArrayContain() {
+		$content = "I like {{if i.php}}PHP{{else}}C++{{/if}}";
+		$result = $this->Parser->parse($content, array("i" => array("php" => true)));
+		$this->assertEquals("I like PHP", $result);
+		
+		$result = $this->Parser->parse($content, array("i" => array("php" => false)));
+		$this->assertEquals("I like C++", $result, "False if i.php = FALSE");
+		
+		$result = $this->Parser->parse($content, array("i" => array("c++" => true)));
+		$this->assertEquals("I like C++", $result, "not isset() => false");
+	}
+	
+	/**
+	 * Сравнение значения элемента массива с константой
+	 */
+	public function testIfArrayItemAgainstConstant() {
+		$content = "I am {{if i.age > 25}}professional{{else}}junior{{/if}}";
+		
+		$result = $this->Parser->parse($content, array("i" => array("age" => 18)));
+		$this->assertEquals("I am junior", $result);
+		
+		$result = $this->Parser->parse($content, array("i" => array("age" => 26)));
+		$this->assertEquals("I am professional", $result);
+	}
+	/**
+	 * Сравнение значения элемента массива с другой переменной (другим элементом массива)
+	 */
+	public function testIfArrayItemAgainstVariables() {
+		$content = "{{if user.limit > user.requests}}ALLOW{{else}}DENY{{/if}}";
+		$data = array(
+			"user" => array(
+				"limit" => 10, 
+				"requests" => 5
+			)
+		);
+	
+		$result = $this->Parser->parse($content, $data);
+		$this->assertEquals("ALLOW", $result);
+	
+		$data['user']['requests'] = 10;
+		$result = $this->Parser->parse($content, $data);
+		$this->assertEquals("DENY", $result);
 	}
 	
 	/**
@@ -184,6 +277,48 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$content = $this->Parser->parse($template, array("users" => $users));
 		
 		$this->assertEquals("Users:<h2>Vasya</h2><ul><li>Pineapple:3</li><li>Melone:1</li></ul><h2>Olga</h2>", $content);
+	}
+	
+	/**
+	 * Тестируем простой вызов callback. 
+	 * Надо проверить, что callback вызывается и тег заменяется на результат его выполнения. 
+	 */
+	public function testCallbackSimple() {
+		$template = "{{module.news}}<div>{{text}}</div>{{/module.news}}";
+		$this->Parser->setCallback(function ($options, $content) {
+			return "i_am_hero";
+		});
+		$content = $this->Parser->parse($template, array());
+		
+		$this->assertEquals("i_am_hero", $content);
+	}
+
+	/**
+	 * В callback должны передаваться параметры и шаблон (текст между открывающим и закрывающим тегом)
+	 * @return mixed
+	 */
+	public function testCallbackWithParams() {
+		$template = "{{module.news order=\"date DESC\" ids=\"1,2,3,4,5\" }}<b>{{order}}</b><b>{{ids}}</b>{{/module.news}}";
+		$this->Parser->setCallback(function ($options, $content) {
+			return str_replace(array("{{order}}", "{{ids}}"), array($options['order'], $options['ids']), $content);
+		});
+		
+		$content = $this->Parser->parse($template, array());
+			
+		$this->assertEquals("<b>date DESC</b><b>1,2,3,4,5</b>", $content);
+	}
+	
+	public function testCallbackWithVarInParams() {
+		$template = '{{module.news ids="{ids}" }}{{/module.news}}';
+		$this->Parser->setCallback(function ($options, $content) {
+			return count($options['ids']);
+		});
+		
+		//ids - это массив! Лекс бы вставил {{module.news ids="Array" }} а потом бы вызвал callback 
+		$ids = array_fill(0, 10000, 1);
+		//Передаём в качестве параметра callback'у массив (объект или ещё что-то не примитивное)
+		$content = $this->Parser->parse($template, array("ids" => $ids));
+		$this->assertEquals(10000, $content);
 	}
 }
 

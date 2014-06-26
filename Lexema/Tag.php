@@ -7,7 +7,7 @@ class Lexema_Tag extends Lexema {
 	
 	public function __construct($content) {
 		parent::__construct($content);
-		if(preg_match('/^{{\s*([\/\w]+)(.*?)}}$/ims', $content, $m)) {
+		if(preg_match('/^{{\s*([\/\.\w]+)(.*?)}}$/ims', $content, $m)) {
 			$this->name = $m[1];
 			$this->paramsString = $m[2];
 		} else {
@@ -52,14 +52,14 @@ class Lexema_Tag extends Lexema {
 			/* условная лексема */
 			$iAm = new Lexema_Condition($this->getContent());
 			$iAm->setTags($this->getTags());
-		} elseif (isset($data[$this->getName()])) {
-			if(is_array($data[$this->getName()])) {
+		} elseif (($value = $this->getVariableValue($this->getName(), $data)) !== null) {	//@TODO потенциальная ошибка: $data[$name] = null Переменная существует и равна null
+			if(is_array($value)) {
 				/* лексема - цикл */
 				$iAm = new Lexema_Loop($this->getContent());
 				$iAm->setTags($this->getTags());
 			} else {
 				/* лексема - переменная */
-				return $data[$this->getName()];
+				return $value;
 			}
 		} else {
 			/* лексема - callback */
@@ -68,6 +68,29 @@ class Lexema_Tag extends Lexema {
 		}
 		
 		return $iAm->parse($data);
+	}
+	
+	/**
+	 * Получить значение переменной
+	 * @param string $name
+	 * @param array $data
+	 * @return Ambigous
+	 */
+	public function getVariableValue($name, $data) {
+		if(strpos($name, ".") !== false) {
+			$parts = explode(".", $name);
+			while($parts) {
+				$name = array_shift($parts);
+				if(isset($data[$name])) {
+					$data = $data[$name];
+				} else {
+					return null;
+				}
+			}
+			return $data;
+		} else {
+			return isset($data[$name]) ? $data[$name] : null;
+		}
 	}
 }
 
