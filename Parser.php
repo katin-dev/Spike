@@ -9,30 +9,31 @@ require_once "Lexema/Condition.php";
 require_once "Lexema/Loop.php";
 
 class Parser {
-
-	private $position = 0;
-	private $content = "";
-	private $data;
-	private $stack = array();
-	private $callback;
 	
+	/**
+	 * Распарсить переданный шаблон на основе переданных данных
+	 * ! К сожалению, из-за того, что в нашей CMS используется один экземпляр объекта Parser, нельзя использовать переменные класса для управления потоком. Все переменные ($data, $content, $position) должны быть локальными переменными метода.
+	 * @param string $content
+	 * @param array $data
+	 * @return string
+	 */
 	public function parse($content, $data) {
 		
-		$this->content = $content;
-		$this->data = $data;
+		$position = 0;
+		$stack = array();
 		
-		while(!$this->isEof()) {
-			$lexema = $this->nextLexemma();
+		while(!$this->isEof($content, $position)) {
+			$lexema = $this->nextLexemma($content, $position);
 			
 			if($lexema instanceof Lexema_Tag && $lexema->isCloseTag()) {
 				/* ищем открывающий тег */
 				
 				$innerTags = array();
-				while(($l = array_pop($this->stack)) != null) {
+				while(($l = array_pop($stack)) != null) {
 					if($l instanceof Lexema_Tag && $l->getName() == $lexema->getOpenTagName()) {
 						/* нашли открывающий тег */
 						$l->setTags(array_reverse($innerTags));
-						array_push($this->stack, $l);
+						array_push($stack, $l);
 						break;
 					}
 					
@@ -40,39 +41,39 @@ class Parser {
 				}
 				
 			} else {
-				array_push($this->stack, $lexema);
+				array_push($stack, $lexema);
 			}
 		}
 		
 		$html = "";
-		foreach ($this->stack as $lexema) {
+		foreach ($stack as $lexema) {
 			$html .=  $lexema->parse($data);
 		}
 		
 		return $html;
 	}
 	
-	protected function nextLexemma() {
+	protected function nextLexemma($content, &$position) {
 		
 		$lex = null;
 		/* начало лексемы */
-		if(substr($this->content, $this->position, 2) == "{{") {
-			$pos = strpos($this->content, "}}", $this->position);
-			$length = $pos - $this->position + 2;
-			$lex = new Lexema_Tag(substr($this->content, $this->position, $length));
-			$this->position = $pos + 2;
+		if(substr($content, $position, 2) == "{{") {
+			$pos = strpos($content, "}}", $position);
+			$length = $pos - $position + 2;
+			$lex = new Lexema_Tag(substr($content, $position, $length));
+			$position = $pos + 2;
 		} else {
 			/* произвольный HTML */
-			$pos = strpos($this->content, "{{", $this->position);
+			$pos = strpos($content, "{{", $position);
 			
 			if($pos !== false) {
-				$length = $pos - $this->position;
-				$lex = new Lexema_Text(substr($this->content, $this->position, $length));
-				$this->position = $pos;
+				$length = $pos - $position;
+				$lex = new Lexema_Text(substr($content, $position, $length));
+				$position = $pos;
 			} else {
-				$pos = strlen($this->content);
-				$lex = new Lexema_Text(substr($this->content, $this->position));
-				$this->position = $pos;
+				$pos = strlen($content);
+				$lex = new Lexema_Text(substr($content, $position));
+				$position = $pos;
 			}
 		}
 		
@@ -80,8 +81,8 @@ class Parser {
 		
 	}
 	
-	protected function isEof() {
-		return $this->position == strlen($this->content);
+	protected function isEof($content, $position) {
+		return $position == strlen($content);
 	}
 	
 	public function setCallback($callback) {
