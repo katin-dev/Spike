@@ -1,7 +1,7 @@
 parser
 ======
 
-Шаблонизатор для PHP
+Лучший некомпилируемый шаблонизатор для PHP
 
 За основу синтаксиса был взят шаблонизатор https://github.com/pyrocms/lex , более ничего общего с Lex наш шаблонизатор не имеет
 
@@ -9,6 +9,7 @@ parser
 ```
 {{ name }}
 {{ user.name }}
+{{ category.description|escape }} - применение модификатора к переменной
 ```
 
 ## Условные операторы:
@@ -19,7 +20,7 @@ parser
 ## Циклы
 ```
 {{ user.goods item="good" key="key" }} 
-<b>{key}} : {{good.name}}</b>
+<b>{{key}} : {{good.name}}</b>
 {{/user.goods}}
 ```
 
@@ -36,5 +37,10 @@ $parser->setCallback(function ($name, $options, $template) {
 Здесь можно передать шаблон в callback (параметр $content) 
 {{ /module.news.getList }}
 ```
-
+Обратите внимание: 
+* переменные в параметрах записываются через одинарную фигурную скобку `{ids}`
+* в параметрах можно указывать модификаторы:
+```
+{{ spellcount value="{goods|count}" words="товар,товара,товаров" }}
+```
 
