@@ -227,6 +227,53 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals("Goods:Pineapple - 2.5\nMelone - 1\nKiwi - 1.7\n", $result);
 	}
 	
+	public function testLoopBy2ndLevelArray() {
+		$content = "Goods:{{client.basket}}{{name}}<br />{{/client.basket}}";
+		
+		$result = $this->Parser->parse($content, array("client" => array("basket" => array(
+			array("name" => "Pineapple"),
+			array("name" => "Melone"),
+			array("name" => "Kiwi")
+		))));
+		$this->assertEquals("Goods:Pineapple<br />Melone<br />Kiwi<br />", $result);
+	}
+	
+	/**
+	 * Проверить запись вида {{ goods item="good" key="key" }}
+	 */
+	public function testLoopByItem() {
+		$content = $this->Parser->parse('{{ goods item="good" key="key" }}<b>{{key}}:{{good.name}}</b>{{/goods}}', array( 
+			"goods" => array(
+				array("name" => "Cherry"), 
+				array("name" => "Apple"),
+				array("name" => "Banana")
+			)
+		));
+		
+		$this->assertEquals('<b>0:Cherry</b><b>1:Apple</b><b>2:Banana</b>', $content);
+	}
+	
+	/**
+	 * Цикл в цикле с доступом к элементу из родительского цикла.
+	 */
+	public function testLoopNested() {
+		$content = $this->Parser->parse('{{ users item="user"}}<b>{{user.name}}</b><ul>{{user.goods}}<li>{{name}}({{user.id}})</li>{{/user.goods}}</ul>{{/users}}', array(
+			"users" => array(
+				array(
+					"id" => 5, 
+					"name" => "Sergey", 
+					"goods" => array(
+						array("name" => "Cherry"),
+						array("name" => "Apple"),
+						array("name" => "Banana")
+					) 
+				)
+			)
+		));
+		
+		$this->assertEquals('<b>Sergey</b><ul><li>Cherry(5)</li><li>Apple(5)</li><li>Banana(5)</li></ul>', $content);
+	}
+	
 	/**
 	 * Внутри цикла должны работать условные конструкции
 	 */
@@ -327,6 +374,23 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	}
 	
 	/**
+	 * Если callback вернул массив а не строку, то мутируем в Loop
+	 */
+	public function testCallback2Loop() {
+		$template = '{{module.users.getList}}<b>{{name}}</b>{{/module.users.getList}}';
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			return array(
+				array("name" => "Sergey"),
+				array("name" => "Ivan"),
+				array("name" => "Kirill"),
+			);
+		});
+		$content = $this->Parser->parse($template, array());
+		
+		$this->assertEquals('<b>Sergey</b><b>Ivan</b><b>Kirill</b>', $content);
+	}
+	
+	/**
 	 * Модификаторы для переменных. Прим: {{ description|escape }} 
 	 */
 	public function testModificator() {
@@ -337,5 +401,7 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$content = $this->Parser->parse($template, array("name" => "Sergey"));
 		$this->assertEquals('escape:Sergey:1', $content);
 	}
+	
+	
 }
 

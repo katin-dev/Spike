@@ -111,6 +111,30 @@ class Lexema_Tag extends Lexema {
 			return $this->getParser()->getMofidicator($modificatorName)->handle($value);
 		}
 	}
+	
+	/**
+	 * Получить список переданных параметров
+	 * @return array key-value массив
+	 */
+	public function getParams($data) {
+		$params = array();
+		preg_match_all('#([-_\w]+)\s*=\s*"([^"]+)"#ims', $this->getParamsString(), $m);
+		if(!empty($m[0])) {
+				
+			$keys = $m[1];
+			$values = $m[2];
+	
+			$params =  array();
+			foreach ($keys as $i => $key) {
+				if(preg_match('/^{(.*)}$/', $values[$i], $m)) {
+					$params[$key] = $this->getVariableValue($m[1], $data);
+				} else {
+					$params[$key] = $values[$i];
+				}
+			}
+		}
+		return $params;
+	}
 }
 
 ?>

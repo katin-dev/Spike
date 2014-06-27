@@ -3,32 +3,21 @@ class Lexema_Callback extends Lexema_Tag {
 	
 	public function parse($data) {
 		if(isset(Lexema::$callback)) {
-			return call_user_func_array(Lexema::$callback, array($this->getName(), $this->getParams($data), $this->getTemplate()));
-		}
-	}
-	
-	/**
-	 * Получить список переданных параметров
-	 * @return array key-value массив
-	 */
-	public function getParams($data) {
-		$params = array();
-		preg_match_all('#([-_\w]+)\s*=\s*"([^"]+)"#ims', $this->getParamsString(), $m);
-		if(!empty($m[0])) {
+			$callbackResult =  call_user_func_array(Lexema::$callback, array($this->getName(), $this->getParams($data), $this->getTemplate()));
 			
-			$keys = $m[1];
-			$values = $m[2];
-			 
-			$params =  array();
-			foreach ($keys as $i => $key) {
-				if(preg_match('/^{(.*)}$/', $values[$i], $m)) {
-					$params[$key] = $this->getVariableValue($m[1], $data);
-				} else {
-					$params[$key] = $values[$i];
-				}
+			if(is_array($callbackResult)) {
+				
+				$tagName = str_replace(".", "_", $this->getName());
+				$tag = new Lexema_Loop('{{'.$tagName.' '.$this->getParamsString().'}}');
+				$tag->setTags($this->getTags());
+				
+				return $tag->parse(array(
+					$tagName => $callbackResult
+				));
+			} else {
+				return $callbackResult;
 			}
 		}
-		return $params;
 	}
 	
 	/**
