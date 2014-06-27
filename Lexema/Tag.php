@@ -75,9 +75,7 @@ class Lexema_Tag extends Lexema {
 		// Модификаторы
 		if(Lexema::$callback && substr($iAm->getParamsString(), 0, 1) == '|') {
 			$modificators = explode("|", substr($iAm->getParamsString(), 1));
-			foreach ($modificators as $modificatorName) {
-				$value = call_user_func_array(Lexema::$callback, array($modificatorName, array("value" => $value), null));
-			}
+			$value = $this->modifyValue($value, $modificators);
 		}
 		
 		return $value;
@@ -90,6 +88,17 @@ class Lexema_Tag extends Lexema {
 	 * @return Ambigous
 	 */
 	public function getVariableValue($name, $data) {
+		
+		// переменная может быть указана вместе с модификаторами: goods|count
+		if(strpos($name, "|")) {
+			$modificators = explode("|", $name);
+			$name = array_shift($modificators);
+		} else {
+			$modificators = array();
+		}
+		
+		$value = null;
+		
 		if(strpos($name, ".") !== false) {
 			$parts = explode(".", $name);
 			while($parts) {
@@ -97,19 +106,32 @@ class Lexema_Tag extends Lexema {
 				if(isset($data[$name])) {
 					$data = $data[$name];
 				} else {
-					return null;
+					$data = null;
+					break;
 				}
 			}
-			return $data;
+			$value = $data;
 		} else {
-			return isset($data[$name]) ? $data[$name] : null;
+			$value = isset($data[$name]) ? $data[$name] : null;
 		}
+		
+		
+		if(Lexema::$callback && $modificators) {
+			$value = $this->modifyValue($value, $modificators);
+		}
+		
+		return $value;
 	}
-	
-	private function modifyValue($modificatorName, $value) {
-		if($this->getParser()->getMofidicator($modificatorName)) {
-			return $this->getParser()->getMofidicator($modificatorName)->handle($value);
+	/**
+	 * Прогнать значение переменной через модификаторы
+	 * @param multiple $value
+	 * @param array $modificators - список имён модификаторов
+	 */
+	private function modifyValue($value, $modificators) {
+		foreach ($modificators as $modificatorName) {
+			$value = call_user_func_array(Lexema::$callback, array($modificatorName, array("value" => $value), null));
 		}
+		return $value;
 	}
 	
 	/**

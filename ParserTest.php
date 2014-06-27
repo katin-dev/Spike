@@ -402,6 +402,28 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('escape:Sergey:1', $content);
 	}
 	
+	/**
+	 * Применение модификатора к параметрам callback
+	 * {{ spellcount value="{ids|count}" }}
+	 */
+	public function testModificatorForParams() {
+		$template = '{{ spellcount value="{ids|count}" }}';
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			switch ($name) {
+				case 'count':
+					return count($options['value']);
+				case "spellcount": 
+					return $options['value'];
+			}
+		});
+		
+		$count = $this->Parser->parse($template, array(
+			"ids" => array(1, 2, 3, 4, 5)
+		));
+		
+		$this->assertEquals(5, $count);
+	}
+	
 	
 }
 
