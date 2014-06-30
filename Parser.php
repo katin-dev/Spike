@@ -33,10 +33,11 @@ class Parser {
 				
 				$innerTags = array();
 				while(($l = array_pop($stack)) != null) {
-					if($l instanceof Lexema_Tag && $l->getName() == $lexema->getOpenTagName()) {
+					if($l instanceof Lexema_Tag && $l->getName() == $lexema->getOpenTagName() && !$l->isClosed()) {
 						// нашли открывающий тег
 						$l->setTags(array_reverse($innerTags));
 						$l->setBody(substr($content, $l->getPosition(), $position - $l->getPosition() - strlen($lexema->getContent())));
+						$l->close();
 						array_push($stack, $l);
 						break;
 					}

@@ -288,6 +288,34 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	}
 	
 	/**
+	 * Проверка служебных переменных _is_first_ _is_last_ _pos_
+	 */
+	public function testLoopSystemVars() {
+		$template = '{{goods item="good"}}
+		{{if good._is_first_}}
+			First
+		{{else}}
+			{{ if good._is_last_ }}
+				Last
+			{{else}}
+				{{good._pos_}}
+			{{/if}}
+		{{/if}}
+		{{/goods}}';
+		
+		$content = $this->Parser->parse($template, array(
+			"goods" => array(
+				array("name" => "Cherry"),
+				array("name" => "Apple"),
+				array("name" => "Banana")
+			)
+		));
+		$content = preg_replace("/\s/m", "", $content);
+		
+		$this->assertEquals("First1Last", $content);
+	}
+	
+	/**
 	 * Внутри цикла должны работать условные конструкции
 	 */
 	public function testIfInLoop() {

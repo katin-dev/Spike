@@ -4,6 +4,7 @@ class Lexema_Tag extends Lexema {
 	private $tags;
 	private $name;
 	private $paramsString;
+	private $closed = false;
 	
 	public function __construct($content) {
 		parent::__construct($content);
@@ -48,6 +49,13 @@ class Lexema_Tag extends Lexema {
 	
 	public function getOpenTagName() {
 		return substr($this->getName(), 1);
+	}
+	
+	public function isClosed() {
+		return $this->closed;
+	}
+	public function close() {
+		$this->closed = true;
 	}
 	
 	public function parse($data) {
