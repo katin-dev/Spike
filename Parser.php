@@ -1,12 +1,16 @@
 <?php
 
+namespace Spike;
+
+use \Spike\Lexema as Lexema;
+
 require_once "Lexema.php";
 require_once "Lexema/Tag.php";
 require_once "Lexema/Text.php";
-require_once "Lexema/Variable.php";
-require_once "Lexema/Callback.php";
-require_once "Lexema/Condition.php";
-require_once "Lexema/Loop.php";
+require_once "Lexema/Tag/Variable.php";
+require_once "Lexema/Tag/Callback.php";
+require_once "Lexema/Tag/Condition.php";
+require_once "Lexema/Tag/Loop.php";
 require_once "Lexema/Params.php";
 require_once "DataStack.php";
 
@@ -28,12 +32,12 @@ class Parser {
 		while(!$this->isEof($content, $position)) {
 			$lexema = $this->nextLexemma($content, $position);
 			
-			if($lexema instanceof Lexema_Tag && $lexema->isCloseTag()) {
+			if($lexema instanceof \Spike\Lexema\Tag && $lexema->isCloseTag()) {
 				/* ищем открывающий тег */
 				
 				$innerTags = array();
 				while(($l = array_pop($stack)) != null) {
-					if($l instanceof Lexema_Tag && $l->getName() == $lexema->getOpenTagName() && !$l->isClosed()) {
+					if($l instanceof \Spike\Lexema\Tag && $l->getName() == $lexema->getOpenTagName() && !$l->isClosed()) {
 						// нашли открывающий тег
 						$l->setTags(array_reverse($innerTags));
 						$l->setBody(substr($content, $l->getPosition(), $position - $l->getPosition() - strlen($lexema->getContent())));
@@ -70,7 +74,7 @@ class Parser {
 			$pos = strpos($content, "}}", $position);
 			$length = $pos - $position + 2;
 			$text = substr($content, $position, $length);
-			$lex = new Lexema_Tag(substr($content, $position, $length));
+			$lex = new Lexema\Tag(substr($content, $position, $length));
 			$position = $pos + 2;
 			$lex->setPosition($position);
 		} else {
@@ -87,7 +91,7 @@ class Parser {
 				$pos = strlen($content);
 			}
 			
-			$lex = new Lexema_Text($text);
+			$lex = new Lexema\Text($text);
 			$position = $pos;
 		}
 		

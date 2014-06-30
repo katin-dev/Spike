@@ -1,6 +1,8 @@
 <?php
 
-class Lexema_Params 
+namespace Spike\Lexema;
+
+class Params
 {
 	private $paramString;
 	public function __construct($string) {
@@ -26,7 +28,7 @@ class Lexema_Params
 			$params =  array();
 			foreach ($keys as $i => $key) {
 				if(preg_match('/^{(.*)}$/', $values[$i], $m)) {
-					$params[$key] = Lexema::getVariableValue($m[1], $data);
+					$params[$key] = \Spike\Lexema::getVariableValue($m[1], $data);
 				} else {
 					$params[$key] = $values[$i];
 				}

@@ -40,7 +40,7 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	
 	/**
 	 *
-	 * @var Parser
+	 * @var \Spike\Parser
 	 */
 	private $Parser;
 	
@@ -49,7 +49,7 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	 */
 	protected function setUp() {
 		parent::setUp ();
-		$this->Parser = new Parser();
+		$this->Parser = new \Spike\Parser();
 	}
 	
 	/**

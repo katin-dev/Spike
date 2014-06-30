@@ -1,4 +1,5 @@
 <?php
+namespace Spike;
 abstract class Lexema {
 
 	public static $callback;	//Наверное, не лучшее решение

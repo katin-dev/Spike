@@ -1,5 +1,7 @@
 <?php
-class Lexema_Variable extends Lexema_Tag {
+namespace Spike\Lexema\Tag;
+
+class Variable extends \Spike\Lexema\Tag {
 	public function parse($data) {
 		return $this->getContent();
 	}

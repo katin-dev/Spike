@@ -1,5 +1,7 @@
 <?php
-class Lexema_Condition extends Lexema_Tag {
+namespace Spike\Lexema\Tag;
+
+class Condition extends \Spike\Lexema\Tag {
 
 	public function parse($data) {
 		if(preg_match('/([\.\w]+)\s*([=><])?\s*(["\'\w\.]+)?/', $this->getParamsString(), $m)) {

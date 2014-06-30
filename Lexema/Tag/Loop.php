@@ -1,5 +1,8 @@
 <?php
-class Lexema_Loop extends Lexema_Tag {
+namespace Spike\Lexema\Tag;
+
+class Loop extends \Spike\Lexema\Tag {
+	
 	public function parse($data) {
 		
 		$html = "";

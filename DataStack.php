@@ -1,5 +1,7 @@
 <?php
 
+namespace Spike;
+
 class DataStack
 {
 	/**

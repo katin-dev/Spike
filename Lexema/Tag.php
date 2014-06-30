@@ -1,5 +1,7 @@
 <?php
-class Lexema_Tag extends Lexema {
+namespace Spike\Lexema;
+
+class Tag extends \Spike\Lexema {
 	
 	private $tags;
 	private $name;
@@ -61,20 +63,20 @@ class Lexema_Tag extends Lexema {
 	public function parse($data) {
 		if($this->getName() == 'if') {
 			/* условная лексема */
-			$iAm = new Lexema_Condition($this->getContent());
+			$iAm = new Tag\Condition($this->getContent());
 			$iAm->setTags($this->getTags());
 		} elseif (($value = $this->getVariableValue($this->getName(), $data)) !== null) {	//@TODO потенциальная ошибка: $data[$name] = null Переменная существует и равна null
 			if(is_array($value)) {
 				/* лексема - цикл */
-				$iAm = new Lexema_Loop($this->getContent());
+				$iAm = new Tag\Loop($this->getContent());
 				$iAm->setTags($this->getTags());
 			} else {
-				$iAm = new Lexema_Variable($value);
+				$iAm = new Tag\Variable($value);
 				$iAm->setParamsString($this->getParamsString());
 			}
 		} else {
 			/* лексема - callback */
-			$iAm = new Lexema_Callback($this->getContent());
+			$iAm = new Tag\Callback($this->getContent());
 			$iAm->setTags($this->getTags());
 			$iAm->setBody($this->getBody());
 		}
@@ -82,7 +84,7 @@ class Lexema_Tag extends Lexema {
 		$value = $iAm->parse($data);
 		
 		// Модификаторы
-		if(Lexema::$callback && substr($iAm->getParamsString(), 0, 1) == '|') {
+		if(\Spike\Lexema::$callback && substr($iAm->getParamsString(), 0, 1) == '|') {
 			$modificators = explode("|", substr($iAm->getParamsString(), 1));
 			$value = $this->modifyValue($value, $modificators);
 		}
@@ -125,7 +127,7 @@ class Lexema_Tag extends Lexema {
 		}
 		
 		
-		if(Lexema::$callback && $modificators) {
+		if(\Spike\Lexema::$callback && $modificators) {
 			$value = $this->modifyValue($value, $modificators);
 		}
 		
@@ -138,7 +140,7 @@ class Lexema_Tag extends Lexema {
 	 */
 	private function modifyValue($value, $modificators) {
 		foreach ($modificators as $modificatorName) {
-			$value = call_user_func_array(Lexema::$callback, array($modificatorName, array("value" => $value), null));
+			$value = call_user_func_array(\Spike\Lexema::$callback, array($modificatorName, array("value" => $value), null));
 		}
 		return $value;
 	}
