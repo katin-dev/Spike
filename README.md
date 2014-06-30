@@ -14,13 +14,52 @@ Spike - это лучший некомпилируемый шаблонизат�
 
 ## Условные операторы:
 ```
-{{ if user.age > 25 }}Взрослый парень{{ /if }}
+{{ if user.age > 25 }}
+  Взрослый мужик
+{{ else }}
+  {{ if user.age > 18 }}
+    Парнишка
+  {{ else }}
+    Ребёнок
+  {{ /if }}
+{{ /if }}
 ```
 
 ## Циклы
+```php 
+$parser->parse($template, [
+ 'goods' => [
+    ['name' => 'Pineapple'],
+    ['name' => 'Melone'],
+    ['name' => 'Kiwi'],
+ ]
+]);
+```
+
+Простое использование (содержимое переменной $template): 
+```
+{{ goods }}
+<li>{{name}}</li>
+{{ /goods }}
+```
+
+Циклы с параметрами <b>item</b> и <b>key</b>
 ```
 {{ user.goods item="good" key="key" }} 
 <b>{{key}} : {{good.name}}</b>
+{{/user.goods}}
+```
+
+Использование вспомогательных переменных <b>_is_first_</b> <b>_is_last_</b> <b>_pos_</b>
+```
+{{ user.goods item="good" }} 
+  <div {{if good._is_first_}}class="first"{{/if}}>
+    <span class="number">{{good._pos_}}</span>
+    <strong>{{good.name}}</strong>
+  </div>
+  {{ if good._is_last_ == 0 }}
+  <div class="separator"></div>
+  {{/if}}
 {{/user.goods}}
 ```
 
