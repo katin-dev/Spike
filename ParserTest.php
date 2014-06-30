@@ -339,20 +339,39 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		
 		$this->assertEquals("module.news", $content);
 	}
-
+	
+	/**
+	 * Передаются ли параметры в callback?
+	 * @return mixed
+	 */
+	public function testCallbackParams() {
+		$template = "{{module.news order=\"date DESC\" ids=\"1,2,3,4,5\" }}<b>{{order}}</b><b>{{ids}}</b>{{/module.news}}";
+	
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			$str = "";
+			foreach ($options as $key => $value) {
+				$str .= $key.'='.$value;
+			}
+			return $str;
+		});
+	
+		$content = $this->Parser->parse($template, array());
+		$this->assertEquals("order=date DESCids=1,2,3,4,5", $content);
+	}
+	
 	/**
 	 * В callback должны передаваться параметры и шаблон (текст между открывающим и закрывающим тегом)
 	 * @return mixed
 	 */
-	public function testCallbackWithParams() {
+	public function testCallbackTemplate() {
 		$template = "{{module.news order=\"date DESC\" ids=\"1,2,3,4,5\" }}<b>{{order}}</b><b>{{ids}}</b>{{/module.news}}";
+		
 		$this->Parser->setCallback(function ($name, $options, $content) {
-			return str_replace(array("{{order}}", "{{ids}}"), array($options['order'], $options['ids']), $content);
+			return $content;
 		});
 		
 		$content = $this->Parser->parse($template, array());
-			
-		$this->assertEquals("<b>date DESC</b><b>1,2,3,4,5</b>", $content);
+		$this->assertEquals("<b>{{order}}</b><b>{{ids}}</b>", $content);
 	}
 	/**
 	 * Безопасная передача переменных через параметры вызова callback.
@@ -390,7 +409,7 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('<b>Sergey</b><b>Ivan</b><b>Kirill</b>', $content);
 	}
 	
-	public function testCallbackTemplate() {
+	public function testCallbackComplexTemplate() {
 		$template = '{{module.users.getList}}{{rows}}<li>{{name}}</li>{{/rows}}{{/module.users.getList}}';
 		$this->Parser->setCallback(function ($name, $options, $content) {
 			return $content;

@@ -25,14 +25,17 @@ class Parser {
 				$innerTags = array();
 				while(($l = array_pop($stack)) != null) {
 					if($l instanceof Lexema_Tag && $l->getName() == $lexema->getOpenTagName()) {
-						/* нашли открывающий тег */
+						// нашли открывающий тег
 						$l->setTags(array_reverse($innerTags));
+						$l->setBody(substr($content, $l->getPosition(), $position - $l->getPosition() - strlen($lexema->getContent())));
 						array_push($stack, $l);
 						break;
 					}
 					
 					$innerTags[] = $l;
 				}
+				
+				// @TODO Проверить, найден ли открывающий тег. Если нет - бросить исключение. 
 				
 			} else {
 				array_push($stack, $lexema);
@@ -57,6 +60,7 @@ class Parser {
 			$text = substr($content, $position, $length);
 			$lex = new Lexema_Tag(substr($content, $position, $length));
 			$position = $pos + 2;
+			$lex->setPosition($position);
 		} else {
 			
 			// Какой-то произвольный HTML код. Просто запоминаем его как текст.

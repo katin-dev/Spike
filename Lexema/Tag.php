@@ -68,6 +68,7 @@ class Lexema_Tag extends Lexema {
 			/* лексема - callback */
 			$iAm = new Lexema_Callback($this->getContent());
 			$iAm->setTags($this->getTags());
+			$iAm->setBody($this->getBody());
 		}
 		
 		$value = $iAm->parse($data);

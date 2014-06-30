@@ -3,7 +3,7 @@ class Lexema_Callback extends Lexema_Tag {
 	
 	public function parse($data) {
 		if(isset(Lexema::$callback)) {
-			$callbackResult =  call_user_func_array(Lexema::$callback, array($this->getName(), $this->getParams($data), $this->getTemplate()));
+			$callbackResult =  call_user_func_array(Lexema::$callback, array($this->getName(), $this->getParams($data), $this->getBody()));
 			
 			if(is_array($callbackResult)) {
 				
@@ -18,17 +18,5 @@ class Lexema_Callback extends Lexema_Tag {
 				return $callbackResult;
 			}
 		}
-	}
-	
-	/**
-	 * Получить переданный в callback шаблон
-	 * @return string
-	 */
-	public function getTemplate() {
-		$template = "";
-		foreach ($this->getTags() as $tag) {
-			$template .= $tag->getContent();
-		}
-		return $template;
 	}
 }
