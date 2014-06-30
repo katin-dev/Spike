@@ -274,6 +274,19 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('<b>Sergey</b><ul><li>Cherry(5)</li><li>Apple(5)</li><li>Banana(5)</li></ul>', $content);
 	}
 	
+	public function testLoopGlobalVars() {
+		$content = $this->Parser->parse('{{goods item="good"}}<li>{{user.name}}:{{good.name}}</li>{{/goods}}', array(
+			"user" => array("name" => "Ivan"), 
+			"goods" => array(
+				array("name" => "Cherry"),
+				array("name" => "Apple"),
+				array("name" => "Banana")
+			) 
+		));
+		
+		$this->assertEquals('<li>Ivan:Cherry</li><li>Ivan:Apple</li><li>Ivan:Banana</li>', $content);
+	}
+	
 	/**
 	 * Внутри цикла должны работать условные конструкции
 	 */
@@ -480,7 +493,6 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		//                             ↑                  ↑ локальные данные внутреннего шаблона
 		//                   данные главного шаблона
 	}
-	
 	
 }
 

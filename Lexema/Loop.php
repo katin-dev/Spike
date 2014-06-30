@@ -12,26 +12,26 @@ class Lexema_Loop extends Lexema_Tag {
 			
 			foreach ($loopVar as $item) {
 				
-				$itemData = array();
+				//$itemData = $data;
 				
 				/* хотим иметь доступ к переменным уровня выше */
-				foreach ($data as $key => $value) {
+				/* foreach ($data as $key => $value) {
 					if($key != $this->getName()) {
 						$itemData[$key] = $value;
 					}
-				}
+				} */
 				
 				/* нам нужны вспомогательные переменные */
-				$itemData['_is_first_'] = (string) ($position == 0);
+				/* $itemData['_is_first_'] = (string) ($position == 0);
 				$itemData['_is_last_'] = (string) ($position == $arrayLength - 1);
-				$itemData['_pos_'] = $position;
+				$itemData['_pos_'] = $position; */
 
-				$itemData = array_merge($itemData, $item);
+				//$itemData = array_merge($itemData, $item);
 				
 				if(isset($params['item'])) {
-					$itemData = array(
-						$params['item'] => $itemData
-					);
+					$itemData = array_merge($data, array($params['item'] => $item));
+				} else {
+					$itemData = array_merge($data, $item);
 				}
 				
 				if(isset($params['key'])) {
