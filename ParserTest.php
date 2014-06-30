@@ -390,6 +390,16 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('<b>Sergey</b><b>Ivan</b><b>Kirill</b>', $content);
 	}
 	
+	public function testCallbackTemplate() {
+		$template = '{{module.users.getList}}{{rows}}<li>{{name}}</li>{{/rows}}{{/module.users.getList}}';
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			return $content;
+		});
+		$content = $this->Parser->parse($template, array());
+		
+		$this->assertEquals('{{rows}}<li>{{name}}</li>{{/rows}}', $content);
+	}
+	
 	/**
 	 * Модификаторы для переменных. Прим: {{ description|escape }} 
 	 */
