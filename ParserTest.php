@@ -453,6 +453,34 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(5, $count);
 	}
 	
+	/**
+	 * Проверка наследования переменных при работе с одним экземпляром парсера
+	 * @return string
+	 */
+	public function testDataStack() {
+		//Основной шаблон 
+		$template = '<body>{{ template name="adv" }}</body>';
+		// Внутренний шаблон - он будет обрабатываться в процессе обработки основного шаблона и он хочет иметь доступ к переменным основного шаблона
+		$templateAdv = '<h1>{{page.title}}</h1><p>Views:{{count}}</p>';
+		
+		$parser = $this->Parser;
+		
+		$this->Parser->setCallback(function ($name, $options, $template) use ($parser, $templateAdv) {
+			if($name == 'template') {
+				// В процессе разборки основного шаблона, мы снова вызываем парсер для разборки внутреннего шаблона
+				return $parser->parse($templateAdv, array("count" => 10));	//Передаем шаблону его собственные данные
+			}
+		});
+		
+		$content = $parser->parse($template, array("page" => array(
+			"title" => "Index Page"	// Внутренний шаблон получает доступ к этому значению
+		)));
+		
+		$this->assertEquals("<body><h1>Index Page</h1><p>Views:10</p></body>", $content);
+		//                             ↑                  ↑ локальные данные внутреннего шаблона
+		//                   данные главного шаблона
+	}
+	
 	
 }
 

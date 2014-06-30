@@ -8,16 +8,25 @@ require_once "Lexema/Callback.php";
 require_once "Lexema/Condition.php";
 require_once "Lexema/Loop.php";
 require_once "Lexema/Params.php";
+require_once "DataStack.php";
 
 class Parser {
-
+	
+	/**
+	 * Данные складываются в стек. Это позволяет вложенным шаблонам получать доступ к переменным более верхнего уровня.
+	 * @var DataStack
+	 */
+	private $dataStack;
+	
 	public function parse($content, $data) {
+		
+		$this->getDataStack()->pushData($data);
 		
 		$position = 0;
 		$stack = array();
 		
 		while(!$this->isEof($content, $position)) {
-			$lexema = $this->nextLexemma($content, $position, $data);
+			$lexema = $this->nextLexemma($content, $position);
 			
 			if($lexema instanceof Lexema_Tag && $lexema->isCloseTag()) {
 				/* ищем открывающий тег */
@@ -44,13 +53,15 @@ class Parser {
 		
 		$html = "";
 		foreach ($stack as $lexema) {
-			$html .=  $lexema->parse($data);
+			$html .=  $lexema->parse($this->getDataStack()->getData());
 		}
+		
+		$this->getDataStack()->popData();
 		
 		return $html;
 	}
 	
-	protected function nextLexemma($content, &$position, &$data) {
+	protected function nextLexemma($content, &$position) {
 		
 		$lex = null;
 		if(substr($content, $position, 2) == "{{") {
@@ -91,6 +102,15 @@ class Parser {
 	}
 	public function getCallback() {
 		return Lexema::$callback;
+	}
+	/**
+	 * @return DataStack
+	 */
+	public function getDataStack() {
+		if(empty($this->dataStack)) {
+			$this->dataStack = new DataStack();
+		}
+		return $this->dataStack;
 	}
 	
 }
