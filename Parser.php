@@ -7,6 +7,7 @@ require_once "Lexema/Variable.php";
 require_once "Lexema/Callback.php";
 require_once "Lexema/Condition.php";
 require_once "Lexema/Loop.php";
+require_once "Lexema/Params.php";
 
 class Parser {
 
@@ -16,7 +17,7 @@ class Parser {
 		$stack = array();
 		
 		while(!$this->isEof($content, $position)) {
-			$lexema = $this->nextLexemma($content, $position);
+			$lexema = $this->nextLexemma($content, $position, $data);
 			
 			if($lexema instanceof Lexema_Tag && $lexema->isCloseTag()) {
 				/* ищем открывающий тег */
@@ -46,32 +47,35 @@ class Parser {
 		return $html;
 	}
 	
-	protected function nextLexemma($content, &$position) {
+	protected function nextLexemma($content, &$position, &$data) {
 		
 		$lex = null;
-		/* начало лексемы */
 		if(substr($content, $position, 2) == "{{") {
+			// Начало лексемы
 			$pos = strpos($content, "}}", $position);
 			$length = $pos - $position + 2;
+			$text = substr($content, $position, $length);
 			$lex = new Lexema_Tag(substr($content, $position, $length));
 			$position = $pos + 2;
 		} else {
-			/* произвольный HTML */
+			
+			// Какой-то произвольный HTML код. Просто запоминаем его как текст.
 			$pos = strpos($content, "{{", $position);
 			
 			if($pos !== false) {
 				$length = $pos - $position;
-				$lex = new Lexema_Text(substr($content, $position, $length));
-				$position = $pos;
+				$text = substr($content, $position, $length);
 			} else {
+				$text = substr($content, $position);
+				// смещаем позицию в конец шаблона. Разбор закончен.
 				$pos = strlen($content);
-				$lex = new Lexema_Text(substr($content, $position));
-				$position = $pos;
 			}
+			
+			$lex = new Lexema_Text($text);
+			$position = $pos;
 		}
 		
 		return $lex;
-		
 	}
 	
 	protected function isEof($content, $position) {
