@@ -95,6 +95,23 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals("Hello, Vasya!", $result);
 	}
 	
+	public function testCondition() {
+		
+		$lexema = new \Spike\Lexema\Tag\Condition('{{ if age > 18 && name == "andrey" }}');
+		
+		$this->assertTrue($lexema->isTrue('flag', array('flag' => true)));
+		$this->assertTrue($lexema->isTrue('flag == 1', array('flag' => true)));
+		$this->assertFalse($lexema->isTrue('flag == 0', array('flag' => true)));
+		
+		$this->assertTrue($lexema->isTrue('age > 18', array('age' => 20)));
+		$this->assertFalse($lexema->isTrue('age > 18', array('age' => 10)));
+		
+		$this->assertTrue($lexema->isTrue('age > 18 && name == "Sergey" ', array('age' => 27, 'name' => 'Sergey')));
+		$this->assertFalse($lexema->isTrue('age > 18 && name == "Sergey" ', array('age' => 27, 'name' => 'Ivan')));
+		
+		$this->assertTrue($lexema->isTrue('age > 18 && name != "Sergey" ', array('age' => 27, 'name' => 'Ivan')));
+	}
+	
 	/**
 	 * Условная конструкция if else
 	 */
@@ -201,6 +218,40 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	
 		$result = $this->Parser->parse($content, array("count" => 0));
 		$this->assertEquals("Goods: not set", $result);
+	}
+	
+	public function testMultipleConditions() {
+		$template = '
+		{{if age > 18 && status == "professional"}}
+		Professional!
+		{{ else }}
+		Junior
+		{{/if}}';
+		
+		$content = $this->Parser->parse($template, array(
+			"age" => 25, 
+			"status" => "professional"
+		));
+		$content = preg_replace('/\s/m', '', $content);
+		
+		$this->assertEquals("Professional!", $content);
+		
+		$content = $this->Parser->parse($template, array(
+			"age" => 16,
+			"status" => "professional"
+		));
+		$content = preg_replace('/\s/m', '', $content);
+		
+		$this->assertEquals("Junior", $content);
+		
+		$content = $this->Parser->parse($template, array(
+			"age" => 27,
+			"status" => "junior"
+		));
+		$content = preg_replace('/\s/m', '', $content);
+		
+		$this->assertEquals("Junior", $content);
+		
 	}
 	
 	/**
