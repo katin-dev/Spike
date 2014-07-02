@@ -168,7 +168,7 @@ class Tag extends \Spike\Lexema {
 		}
 		
 		// Парсим параметры с названиями переменных без кавычек
-		preg_match_all('#([-_\w]+)\s*=\s*([-_|\w]+)#ims', $this->getParamsString(), $variables);
+		preg_match_all('#([-_\w]+)\s*=\s*([-_|\.\w]+)#ims', $this->getParamsString(), $variables);
 		if($variables[0]) {
 			foreach ($variables[1] as $i => $name) {
 				$params[$name] = $this->getVariableValue($variables[2][$i], $data);

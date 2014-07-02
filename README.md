@@ -84,7 +84,7 @@ $parser->parse($template, [
 ## Callback
 Для начала, следует установить callback: 
 ```php
-$parser->setCallback(function ($name, $options, $template) {
+$parser->setCallback(function ($name, $options, $content) {
     // обработка callback тегов
 });
 ```
