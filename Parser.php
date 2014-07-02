@@ -13,6 +13,7 @@ require_once "Lexema/Tag/Condition.php";
 require_once "Lexema/Tag/Loop.php";
 require_once "Lexema/Params.php";
 require_once "DataStack.php";
+require_once "Timer.php";
 
 class Parser {
 	
@@ -29,6 +30,7 @@ class Parser {
 		$position = 0;
 		$stack = array();
 		
+		\Spike\Timer::start("Поиск лексем");
 		while(!$this->isEof($content, $position)) {
 			$lexema = $this->nextLexemma($content, $position);
 			
@@ -55,10 +57,13 @@ class Parser {
 				array_push($stack, $lexema);
 			}
 		}
+		\Spike\Timer::stop();
 		
 		$html = "";
-		foreach ($stack as $lexema) {
+		foreach ($stack as $k => $lexema) {
+			\Spike\Timer::start("[$k]" . $lexema->getName()  ? $lexema->getName() : 'Text' );
 			$html .=  $lexema->parse($this->getDataStack()->getData());
+			\Spike\Timer::stop();
 		}
 		
 		$this->getDataStack()->popData();
