@@ -61,7 +61,7 @@ class Parser {
 		
 		$html = "";
 		foreach ($stack as $k => $lexema) {
-			\Spike\Timer::start("[$k]" . $lexema->getName()  ? $lexema->getName() : 'Text' );
+			\Spike\Timer::start("[$k]" . ($lexema->getName()  ? $lexema->getName() : 'Text') );
 			$html .=  $lexema->parse($this->getDataStack()->getData());
 			\Spike\Timer::stop();
 		}
