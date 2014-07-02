@@ -472,7 +472,7 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	 * @return number
 	 */
 	public function testCallbackWithVarInParams() {
-		$template = '{{module.news ids="{ids}" }}{{/module.news}}';
+		$template = '{{module.news ids=ids }}{{/module.news}}';
 		$this->Parser->setCallback(function ($name, $options, $content) {
 			return count($options['ids']);
 		});
@@ -528,7 +528,7 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	 * {{ spellcount value="{ids|count}" }}
 	 */
 	public function testModificatorForParams() {
-		$template = '{{ spellcount value="{ids|count}" }}';
+		$template = '{{ spellcount value=ids|count }}';
 		$this->Parser->setCallback(function ($name, $options, $content) {
 			switch ($name) {
 				case 'count':

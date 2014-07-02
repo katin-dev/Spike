@@ -151,19 +151,27 @@ class Tag extends \Spike\Lexema {
 	 */
 	public function getParams($data) {
 		$params = array();
-		preg_match_all('#([-_\w]+)\s*=\s*"([^"]+)"#ims', $this->getParamsString(), $m);
-		if(!empty($m[0])) {
-				
-			$keys = $m[1];
-			$values = $m[2];
-	
-			$params =  array();
-			foreach ($keys as $i => $key) {
-				if(preg_match('/^{(.*)}$/', $values[$i], $m)) {
-					$params[$key] = $this->getVariableValue($m[1], $data);
-				} else {
-					$params[$key] = $values[$i];
-				}
+		
+		// Построим работу в два этапа
+		// 1. Этап - распарсить все строковые параметры с кавычками
+		// 2. Этап - распарсить названия переменных (указаны без кавычек)
+		
+		$string = $this->getParamsString();
+		
+		// Парсим строковые параметры с кавычками
+		preg_match_all('#([-_\w]+)\s*=\s*"([^"]+)"#ims', $string, $literals);
+		if($literals[0]) {
+			foreach ($literals[1] as $i => $name) {
+				$params[$name] = $literals[2][$i];
+				$string = str_replace($literals[0][$i], '', $string);
+			}
+		}
+		
+		// Парсим параметры с названиями переменных без кавычек
+		preg_match_all('#([-_\w]+)\s*=\s*([-_|\w]+)#ims', $this->getParamsString(), $variables);
+		if($variables[0]) {
+			foreach ($variables[1] as $i => $name) {
+				$params[$name] = $this->getVariableValue($variables[2][$i], $data);
 			}
 		}
 		return $params;

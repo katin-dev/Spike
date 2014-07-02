@@ -90,14 +90,15 @@ $parser->setCallback(function ($name, $options, $template) {
 ```
 После этого в шаблонах можно писать
 ```
-{{ module.news.getList ids="{ids}" order="date" }}
+{{ module.news.getList ids = page.ids order="date" }}
 Здесь можно передать шаблон в callback (параметр $content) 
 {{ /module.news.getList }}
 ```
 Обратите внимание: 
-* переменные в параметрах записываются через одинарную фигурную скобку `{ids}`
+* переменные в параметрах указываются без кавычек `ids = page.ids`
+* строковые параметры указываются через `двойные кавычки` : `order = "date desc"`
 * в параметрах можно указывать модификаторы:
 ```
-{{ spellcount value="{goods|count}" words="товар,товара,товаров" }}
+{{ spellcount value = goods|count words="товар,товара,товаров" }}
 ```
 
