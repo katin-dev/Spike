@@ -515,12 +515,19 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	 * Модификаторы для переменных. Прим: {{ description|escape }} 
 	 */
 	public function testModificator() {
-		$template = '{{name|escape}}';
+		$template = '{{ name|escape|length }}';	// Можно указывать несколько модификаторов, разрешаются пробелы в начале и в конце выражения
 		$this->Parser->setCallback(function ($name, $options, $content) {
-			return $name.':'.$options['value'].':'.empty($content);
+			switch($name) {
+				case "escape":
+					return str_replace(array("<", ">"), array("&lt;", "&gt;"), $options['value']);
+				case "length":
+					return strlen($options['value']);
+			}
 		});
-		$content = $this->Parser->parse($template, array("name" => "Sergey"));
-		$this->assertEquals('escape:Sergey:1', $content);
+		$content = $this->Parser->parse($template, array("name" => "20>10"));
+		// 20>10 => 20&gt;10
+		// 20&gt;10 => 8 
+		$this->assertEquals(8, $content);
 	}
 	
 	/**

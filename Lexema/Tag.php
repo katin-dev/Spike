@@ -140,7 +140,7 @@ class Tag extends \Spike\Lexema {
 	 */
 	private function modifyValue($value, $modificators) {
 		foreach ($modificators as $modificatorName) {
-			$value = call_user_func_array(\Spike\Lexema::$callback, array($modificatorName, array("value" => $value), null));
+			$value = call_user_func_array(\Spike\Lexema::$callback, array(trim($modificatorName), array("value" => $value), null));
 		}
 		return $value;
 	}
