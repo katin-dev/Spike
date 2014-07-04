@@ -80,7 +80,6 @@ $parser->parse($template, [
 ```
 
 
-
 ## Callback
 Для начала, следует установить callback: 
 ```php
@@ -101,4 +100,19 @@ $parser->setCallback(function ($name, $options, $content) {
 ```
 {{ spellcount value = goods|count words="товар,товара,товаров" }}
 ```
+
+## Модификаторы
+Модификаторы - это те же callback. Когда мы пишем {{ goods|count }} после получения значения для переменной goods, вызывается callback, которому во втором аргументе $options 
+будет передано значение value = $goods. 
+
+Модификаторм можно передавать другие аргументы через скобки: 
+```
+{{ goods|count|spellcount("товар", "товара", "товаров", false) }}
+```
+В качестве аргументов могут выступать переменные, тогда мы указываем их без кавычек:
+``` 
+{{ var|modificator_name(var_name) }}
+```
+
+<b>true</b> и <b>false</b> Интерпретируется как булево значение TRUE и FALSE
 

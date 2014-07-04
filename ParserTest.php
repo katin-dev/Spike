@@ -599,5 +599,40 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('<div class="list">1,2,3,4,5</div>', $content);
 	}
 	
+	public function testModificatorParameters() {
+		$template = '{{ count|spellcount("балл","балла","баллов", false, name) }}';
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			if($name == 'spellcount') {
+				
+				$num = intval($options['value']);
+				
+				$one = $options[1];
+				$two = $options[2];
+				$many = $options[3];
+				
+				$nodigit = isset($options[4]) ? $options[4] : false;
+				
+				if ($num%10==1 && $num%100!=11){
+					$str =   ((!$nodigit)?$num:'').' '.$one;
+				}
+				elseif($num%10>=2 && $num%10<=4 && ($num%100<10 || $num%100>=20)){
+					$str =  ((!$nodigit)?$num:'').' '.$two;
+				}
+				else{
+					$str =  ((!$nodigit)?$num:'').' '.$many;
+				}
+				
+				return $str . ' '. $options[5];
+			}
+		});
+		
+		$content = $this->Parser->parse($template, array(
+			"count" => 3, 
+			"name" => "Сергей"
+		));
+		
+		$this->assertEquals("3 балла Сергей", $content);
+	}
+	
 }
 

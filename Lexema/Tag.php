@@ -89,7 +89,7 @@ class Tag extends \Spike\Lexema {
 		// Модификаторы
 		if(\Spike\Lexema::$callback && substr($iAm->getParamsString(), 0, 1) == '|') {
 			$modificators = explode("|", substr($iAm->getParamsString(), 1));
-			$value = $this->modifyValue($value, $modificators);
+			$value = $this->modifyValue($value, $modificators, $data);
 		}
 		
 		return $value;
@@ -102,6 +102,13 @@ class Tag extends \Spike\Lexema {
 	 * @return Ambigous
 	 */
 	public function getVariableValue($name, $data) {
+		
+		if($name == 'true') {
+			return true;
+		} 
+		if($name == 'false') {
+			return false;
+		}
 		
 		// переменная может быть указана вместе с модификаторами: goods|count
 		if(strpos($name, "|")) {
@@ -131,7 +138,7 @@ class Tag extends \Spike\Lexema {
 		
 		
 		if(\Spike\Lexema::$callback && $modificators) {
-			$value = $this->modifyValue($value, $modificators);
+			$value = $this->modifyValue($value, $modificators, $data);
 		}
 		
 		return $value;
@@ -141,9 +148,29 @@ class Tag extends \Spike\Lexema {
 	 * @param multiple $value
 	 * @param array $modificators - список имён модификаторов
 	 */
-	private function modifyValue($value, $modificators) {
+	private function modifyValue($value, $modificators, $data) {
 		foreach ($modificators as $modificatorName) {
-			$value = call_user_func_array(\Spike\Lexema::$callback, array(trim($modificatorName), array("value" => $value), null));
+			$modificatorName = trim($modificatorName);
+			
+			$arguments = array(
+				"value" => $value
+			);
+			
+			//Вычленение аргументов из модификаторов
+			if(preg_match('/^(\w+)\(([^\)]+)\)$/', $modificatorName, $m)) {
+				$modificatorName = $m[1];
+				foreach (explode(",", $m[2]) as $varNumber => $varName) {
+					$varName = trim($varName);
+					if(preg_match('/^"([^"]*)"$/', $varName, $literalMatch)) {
+						$arguments[$varNumber + 1] = $literalMatch[1];  
+					} else {
+						$arguments[$varNumber + 1] = $this->getVariableValue($varName, $data);
+					}
+					
+				}
+			}
+			
+			$value = call_user_func_array(\Spike\Lexema::$callback, array($modificatorName, $arguments, null));
 		}
 		return $value;
 	}
