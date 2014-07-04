@@ -3,7 +3,7 @@ namespace Spike\Lexema\Tag;
 
 class Loop extends \Spike\Lexema\Tag {
 	
-	public function parse($data) {
+	public function parse(&$data) {
 		
 		$html = "";
 		$loopVar = $this->getVariableValue($this->getName(), $data);

@@ -580,5 +580,24 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		//                   данные главного шаблона
 	}
 	
+	
+	public function testAssign() {
+		$template = '
+			{{ set var="list_html" }}
+				<div class="list">{{ module.offer.search ids=ids }}</div>
+			{{ /set }}
+			{{list_html}}
+		';
+		
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			if($name == 'module.offer.search') {
+				return implode(',',$options['ids']);
+			}
+		});
+		
+		$content = str_replace(array("\r", "\n", "\t"), '', $this->Parser->parse($template, array("ids" => array(1, 2, 3, 4, 5))));
+		$this->assertEquals('<div class="list">1,2,3,4,5</div>', $content);
+	}
+	
 }
 

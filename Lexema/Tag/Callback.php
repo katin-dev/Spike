@@ -3,7 +3,7 @@ namespace Spike\Lexema\Tag;
 
 class Callback extends \Spike\Lexema\Tag {
 	
-	public function parse($data) {
+	public function parse(&$data) {
 		if(isset(\Spike\Lexema::$callback)) {
 			
 			\Spike\Timer::pause();
@@ -16,9 +16,10 @@ class Callback extends \Spike\Lexema\Tag {
 				$tag = new Loop('{{'.$tagName.' '.$this->getParamsString().'}}');
 				$tag->setTags($this->getTags());
 				
-				return $tag->parse(array(
-					$tagName => $callbackResult
-				));
+				$loopData = $data;
+				$loopData[$tagName] = $callbackResult;
+				
+				return $tag->parse($loopData);
 			} else {
 				return $callbackResult;
 			}

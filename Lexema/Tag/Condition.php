@@ -21,7 +21,7 @@ class Condition extends \Spike\Lexema\Tag {
 		return eval($phpCode);
 	}
 
-	public function parse($data) {
+	public function parse(&$data) {
 		
 		$conditionResult = $this->isTrue($this->getParamsString(), $data);
 		

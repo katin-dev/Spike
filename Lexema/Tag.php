@@ -60,10 +60,13 @@ class Tag extends \Spike\Lexema {
 		$this->closed = true;
 	}
 	
-	public function parse($data) {
+	public function parse(&$data) {
 		if($this->getName() == 'if') {
 			/* условная лексема */
 			$iAm = new Tag\Condition($this->getContent());
+			$iAm->setTags($this->getTags());
+		} elseif($this->getName() == 'set') {
+			$iAm = new Tag\Assign($this->getContent());
 			$iAm->setTags($this->getTags());
 		} elseif (($value = $this->getVariableValue($this->getName(), $data)) !== null) {	//@TODO потенциальная ошибка: $data[$name] = null Переменная существует и равна null
 			if(is_array($value)) {

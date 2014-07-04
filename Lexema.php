@@ -43,7 +43,7 @@ abstract class Lexema {
 		$this->body = $string;
 	}
 	
-	public function parse($data) {
+	public function parse(&$data) {
 		return $this->getContent();
 	}
 }

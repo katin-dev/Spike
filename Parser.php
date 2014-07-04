@@ -11,6 +11,7 @@ require_once "Lexema/Tag/Variable.php";
 require_once "Lexema/Tag/Callback.php";
 require_once "Lexema/Tag/Condition.php";
 require_once "Lexema/Tag/Loop.php";
+require_once "Lexema/Tag/Assign.php";
 require_once "Lexema/Params.php";
 require_once "DataStack.php";
 require_once "Timer.php";
@@ -60,9 +61,10 @@ class Parser {
 		\Spike\Timer::stop();
 		
 		$html = "";
+		$data = $this->getDataStack()->getData();
 		foreach ($stack as $k => $lexema) {
 			\Spike\Timer::start("[$k]" . ($lexema->getName()  ? $lexema->getName() : 'Text') );
-			$html .=  $lexema->parse($this->getDataStack()->getData());
+			$html .=  $lexema->parse($data);
 			\Spike\Timer::stop();
 		}
 		
