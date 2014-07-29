@@ -419,6 +419,27 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 	}
 	
 	/**
+	 * Проверка цикла по ассоциативному массиву
+	 */
+	public function testLoopAssociative() {
+		$template = '{{ data key="key" item="value" }}
+			<td>{{key}}</td>
+			<td>{{value}}</td>
+		{{/data}}';
+		
+		$content = $this->Parser->parse($template, array(
+			"data" => array(
+				"name" => "Andrey", 
+				"age" => 23, 
+				"sex" => "m"
+			)
+		));
+		$content = preg_replace('/\s/', "", $content);
+		
+		$this->assertEquals('<td>name</td><td>Andrey</td><td>age</td><td>23</td><td>sex</td><td>m</td>', $content);
+	}
+	
+	/**
 	 * Тестируем простой вызов callback. 
 	 * Надо проверить, что callback вызывается и тег заменяется на результат его выполнения. 
 	 */

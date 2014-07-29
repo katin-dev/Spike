@@ -13,20 +13,41 @@ class Loop extends \Spike\Lexema\Tag {
 			$position = 0;
 			$params = $this->getParams($data);
 			
-			foreach ($loopVar as $item) {
+			foreach ($loopVar as $key => $item) {
 				
-				$item['_is_first_'] = (string) ($position == 0);
-				$item['_is_last_'] = (string) ($position == $arrayLength - 1);
-				$item['_pos_'] = $position;
-
+				/*
+				 * {{ goods }}
+				 *   {{name}}
+				 * {{ /goods}}
+				 * $itemData = $goods[i]
+				 * 
+				 * {{ pages item="pageNumber" }}
+				 *   {{pageNumber}}
+				 * {{ /pages }}
+				 * $itemData = [ pageNumber: $pages[i] ]
+				 * 
+				 * {{ user key="key" item="value" }}
+				 * {{ key}} = {{value}}
+				 * {{ /user}}
+				 * $itemData = [key:i, value: $user[i]]
+				 */
+				
+				if(is_array($item)) {
+					$item['_is_first_'] = (string) ($position == 0);
+					$item['_is_last_'] = (string) ($position == $arrayLength - 1);
+					$item['_pos_'] = $position;
+				}
+				
 				if(isset($params['item'])) {
 					$itemData = array_merge($data, array($params['item'] => $item));
-				} else {
+				} elseif(is_array($item)) {
 					$itemData = array_merge($data, $item);
+				} else {
+					$itemData = $data;
 				}
 				
 				if(isset($params['key'])) {
-					$itemData[$params['key']] = $position;
+					$itemData[$params['key']] = $key;
 				}
 				
 				foreach ($this->getTags() as $tag) {
