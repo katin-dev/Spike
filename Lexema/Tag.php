@@ -61,38 +61,48 @@ class Tag extends \Spike\Lexema {
 	}
 	
 	public function parse(&$data) {
-		if($this->getName() == 'if') {
-			/* условная лексема */
-			$iAm = new Tag\Condition($this->getContent());
-			$iAm->setTags($this->getTags());
-		} elseif($this->getName() == 'set') {
-			$iAm = new Tag\Assign($this->getContent());
-			$iAm->setTags($this->getTags());
-		} elseif (($value = $this->getVariableValue($this->getName(), $data)) !== null) {	//@TODO потенциальная ошибка: $data[$name] = null Переменная существует и равна null
-			if(is_array($value)) {
-				/* лексема - цикл */
-				$iAm = new Tag\Loop($this->getContent());
-				$iAm->setTags($this->getTags());
-			} else {
-				$iAm = new Tag\Variable($value);
-				$iAm->setParamsString($this->getParamsString());
-			}
-		} else {
-			/* лексема - callback */
-			$iAm = new Tag\Callback($this->getContent());
-			$iAm->setTags($this->getTags());
-			$iAm->setBody($this->getBody());
-		}
 		
-		$value = $iAm->parse($data);
+		$tag = $this->mutate($this, $data);
+		$value = $tag->parse($data);
 		
 		// Модификаторы
-		if(\Spike\Lexema::$callback && substr($iAm->getParamsString(), 0, 1) == '|') {
-			$modificators = explode("|", substr($iAm->getParamsString(), 1));
+		if(\Spike\Lexema::$callback && substr($tag->getParamsString(), 0, 1) == '|') {
+			$modificators = explode("|", substr($tag->getParamsString(), 1));
 			$value = $this->modifyValue($value, $modificators, $data);
 		}
 		
 		return $value;
+	}
+	
+	protected function mutate($tag, $data) {
+		if($tag->getName() == 'if') {
+			/* условная лексема */
+			$iAm = new Tag\Condition($tag->getContent());
+			$iAm->setTags($tag->getTags());
+		} elseif($tag->getName() == 'set') {
+			$iAm = new Tag\Assign($tag->getContent());
+			$iAm->setTags($tag->getTags());
+		} else {
+			$foundVar = false;
+			$value = $this->getVariableValue($tag->getName(), $data, $foundVar);
+			if ($foundVar) {
+				if(is_array($value)) {
+					/* лексема - цикл */
+					$iAm = new Tag\Loop($tag->getContent());
+					$iAm->setTags($tag->getTags());
+				} else {
+					$iAm = new Tag\Variable($value);
+					$iAm->setParamsString($tag->getParamsString());
+				}
+			} else {
+				/* лексема - callback */
+				$iAm = new Tag\Callback($tag->getContent());
+				$iAm->setTags($tag->getTags());
+				$iAm->setBody($tag->getBody());
+			}
+		}
+		
+		return $iAm;
 	}
 	
 	/**
@@ -101,7 +111,7 @@ class Tag extends \Spike\Lexema {
 	 * @param array $data
 	 * @return Ambigous
 	 */
-	public function getVariableValue($name, $data) {
+	public function getVariableValue($name, $data, &$foundVar) {
 		
 		if($name == 'true') {
 			return true;
@@ -119,6 +129,7 @@ class Tag extends \Spike\Lexema {
 		}
 		
 		$value = null;
+		$foundVar = true;	//флаг сигнализирует о том, что переменная была найдена
 		
 		if(strpos($name, ".") !== false) {
 			$parts = explode(".", $name);
@@ -128,14 +139,19 @@ class Tag extends \Spike\Lexema {
 					$data = $data[$name];
 				} else {
 					$data = null;
+					$foundVar = false;	// не найдена
 					break;
 				}
 			}
 			$value = $data;
 		} else {
-			$value = isset($data[$name]) ? $data[$name] : null;
+			if(isset($data[$name])) {
+				$value = $data[$name];
+			} else {
+				$value = null;
+				$foundVar = false;	// не надена
+			}
 		}
-		
 		
 		if(\Spike\Lexema::$callback && $modificators) {
 			$value = $this->modifyValue($value, $modificators, $data);
@@ -201,7 +217,14 @@ class Tag extends \Spike\Lexema {
 		preg_match_all('#([-_\w]+)\s*=\s*([-_|\.\w]+)#ims', $this->getParamsString(), $variables);
 		if($variables[0]) {
 			foreach ($variables[1] as $i => $name) {
-				$params[$name] = $this->getVariableValue($variables[2][$i], $data);
+				$foundVar = false;
+				$params[$name] = $this->getVariableValue($variables[2][$i], $data, $foundVar);
+				if($foundVar == false) {
+					// Может, это callback ? 
+					$tag = new \Spike\Lexema\Tag\Callback('{{' . $variables[2][$i] . '}}');
+					$tag->returnRawResult(true);
+					$params[$name] = $tag->parse($data);
+				}
 			}
 		}
 		return $params;

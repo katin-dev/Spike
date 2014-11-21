@@ -28,7 +28,8 @@ class Params
 			$params =  array();
 			foreach ($keys as $i => $key) {
 				if(preg_match('/^{(.*)}$/', $values[$i], $m)) {
-					$params[$key] = \Spike\Lexema::getVariableValue($m[1], $data);
+					$foundVar = false; 
+					$params[$key] = \Spike\Lexema::getVariableValue($m[1], $data, $foundVar);
 				} else {
 					$params[$key] = $values[$i];
 				}

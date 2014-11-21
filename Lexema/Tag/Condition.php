@@ -5,14 +5,26 @@ class Condition extends \Spike\Lexema\Tag {
 	
 	public function isTrue($condition, $data) {
 		
-		preg_match_all('/\b(?<![\'"])([\.\w]+)\b/sm', $condition, $m);
+		preg_match_all('/\b(?<![\'"])([\.\w]+)\b/sm', $condition, $m, PREG_OFFSET_CAPTURE);
 		
 		$_vars = array();
-		
-		foreach ($m[1] as $key => $name) {
-			if(!is_numeric($name) && !in_array($name, array('&&', '||'))) {
-				$_vars[$name] =  $this->getVariableValue($name, $data);
-				$condition = str_replace($name, '$_vars[\''.$name.'\']', $condition);
+		$mLength = count($m[1]);
+
+		for($key = 0; $key < $mLength; $key ++) {
+			list($name, $offset) = $m[1][$key];
+			if(!is_numeric($name) && !in_array($name, array('&&', '||', '==', '!='))) {	// по-моему, в массиве нет необходимости
+				$foundVar = false;
+				$_vars[$name] =  $this->getVariableValue($name, $data, $foundVar);
+				$varString = '$_vars[\''.$name.'\']';
+
+				$length = strlen($condition);
+				$condition = substr_replace($condition, $varString, $offset, strlen($name));
+				$diff = strlen($condition) - $length;
+
+				// распространяем смещение на оставшиеся блоки
+				for($k = $key + 1; $k < $mLength; $k++) {
+					$m[1][$k][1] += $diff;
+				}
 			}
 		}
 		

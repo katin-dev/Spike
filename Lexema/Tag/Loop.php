@@ -6,7 +6,8 @@ class Loop extends \Spike\Lexema\Tag {
 	public function parse(&$data) {
 		
 		$html = "";
-		$loopVar = $this->getVariableValue($this->getName(), $data);
+		$foundVar = false;
+		$loopVar = $this->getVariableValue($this->getName(), $data, $foundVar);
 		if($loopVar && is_array($loopVar)) {
 			
 			$arrayLength = count($loopVar);
