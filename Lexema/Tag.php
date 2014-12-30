@@ -180,7 +180,8 @@ class Tag extends \Spike\Lexema {
 					if(preg_match('/^"([^"]*)"$/', $varName, $literalMatch)) {
 						$arguments[$varNumber + 1] = $literalMatch[1];  
 					} else {
-						$arguments[$varNumber + 1] = $this->getVariableValue($varName, $data);
+						$found = false;
+						$arguments[$varNumber + 1] = $this->getVariableValue($varName, $data, $found);
 					}
 					
 				}

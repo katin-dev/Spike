@@ -25,7 +25,9 @@ class Parser {
 	private $dataStack;
 	
 	public function parse($content, $data) {
-		
+
+		$content = $this->stripComments($content);
+
 		$this->getDataStack()->pushData($data);
 		
 		$position = 0;
@@ -123,6 +125,10 @@ class Parser {
 			$this->dataStack = new DataStack();
 		}
 		return $this->dataStack;
+	}
+
+	protected function stripComments($content) {
+		return preg_replace('/{{*.*?\*}}/ms', "", $content);
 	}
 	
 }

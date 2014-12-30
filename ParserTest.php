@@ -620,6 +620,29 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('<div class="list">1,2,3,4,5</div>', $content);
 	}
 	
+	public function testAssignRawData() {
+
+		$template = '
+			{{ set var="foo" raw="1" }}
+				{{ module.offer.search }}
+			{{ /set }}
+			{{ foo item="item" }}-{{ /foo }}
+		';
+		
+		$this->Parser->setCallback(function ($name, $options, $content) {
+			if($name == 'module.offer.search') {
+				return array(1, 2, 3);
+			}
+			if($name == 'implode') {
+				print_r($options);
+				return implode(",", $options['value']);
+			}
+		});
+		
+		$content = str_replace(array("\r", "\n", "\t"), '', $this->Parser->parse($template, array()));
+		$this->assertEquals('---', $content);
+	}
+	
 	public function testModificatorParameters() {
 		$template = '{{ count|spellcount("балл","балла","баллов", false, name) }}';
 		$this->Parser->setCallback(function ($name, $options, $content) {
@@ -653,6 +676,26 @@ class ParserTest extends PHPUnit_Framework_TestCase {
 		));
 		
 		$this->assertEquals("3 балла Сергей", $content);
+	}
+
+	public function testComment()
+	{
+		$template = '
+		Start:
+		{{*
+			{{rows}}
+				{{name}}
+			{{/rows}}
+		*}}
+		end.
+		';
+		$content = $this->Parser->parse($template, array("rows" => array(
+			array("name" => "one"),
+			array("name" => "two")
+		)));
+		$content = preg_replace('/\s/', '', $content);
+
+		$this->assertEquals('Start:end.', $content);
 	}
 	
 }

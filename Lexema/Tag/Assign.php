@@ -25,8 +25,12 @@ class Assign extends \Spike\Lexema\Tag {
 				$tag = $this->mutate($tags[0], $data);
 				if($tag instanceof \Spike\Lexema\Tag\Callback && isset($params['raw'])) {
 					$tag->returnRawResult(true);
+					$html = $tag->parse($data);
+				} elseif(isset($params['raw'])) {
+					$html = $this->getVariableValue($tag->getName(), $data, $found);
+				} else {
+					$html = $tag->parse($data);
 				}
-				$html = $tag->parse($data);
 			} else {
 				// Считаем, что каждый внутренний тег должен вернуть HTML
 				foreach ($this->getTags() as $tag) {
