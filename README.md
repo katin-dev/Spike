@@ -116,3 +116,8 @@ $parser->setCallback(function ($name, $options, $content) {
 
 <b>true</b> и <b>false</b> Интерпретируется как булево значение TRUE и FALSE
 
+## Комментарии
+```
+{{* это комментарий *}}
+```
+
