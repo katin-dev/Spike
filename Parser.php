@@ -128,7 +128,7 @@ class Parser {
 	}
 
 	protected function stripComments($content) {
-		return preg_replace('/{{*.*?\*}}/ms', "", $content);
+		return preg_replace('/{{\*.*?\*}}/ms', "", $content);
 	}
 	
 }
