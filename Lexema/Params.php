@@ -19,7 +19,7 @@ class Params
 	 */
 	public function getParams($data) {
 		$params = array();
-		preg_match_all('#([-_\w]+)\s*=\s*"([^"]+)"#ims', $this->getString(), $m);
+		preg_match_all('#([-_\w]+)\s*=\s*["\']([^"\']+)["\']#ims', $this->getString(), $m);
 		if(!empty($m[0])) {
 	
 			$keys = $m[1];

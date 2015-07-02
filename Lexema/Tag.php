@@ -206,7 +206,7 @@ class Tag extends \Spike\Lexema {
 		$string = $this->getParamsString();
 		
 		// Парсим строковые параметры с кавычками
-		preg_match_all('#([-_\w]+)\s*=\s*"([^"]+)"#ims', $string, $literals);
+		preg_match_all('#([-_\w]+)\s*=\s*["\']([^"\']+)["\']#ims', $string, $literals);
 		if($literals[0]) {
 			foreach ($literals[1] as $i => $name) {
 				$params[$name] = $literals[2][$i];
